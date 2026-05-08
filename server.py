@@ -30,6 +30,30 @@ def _get_index(courses: dict[str, dict]) -> str:
     return json.dumps(result)
 
 
+def _get_course(courses: dict[str, dict], slug: str) -> str:
+    """Return JSON course overview or descriptive error string."""
+    if slug not in courses:
+        available = ", ".join(sorted(courses.keys()))
+        return f"Course '{slug}' not found. Available courses: {available}"
+
+    data = courses[slug]
+    lessons = [
+        {
+            "lessonIndex": i,
+            "title": lesson["title"],
+            "href": lesson.get("href", ""),
+        }
+        for i, lesson in enumerate(data["lessons"])
+    ]
+    result = {
+        "courseTitle": data["courseTitle"],
+        "courseUrl": data.get("courseUrl", ""),
+        "lessonCount": data.get("lessonCount", len(data["lessons"])),
+        "lessons": lessons,
+    }
+    return json.dumps(result)
+
+
 # ── Server factory ────────────────────────────────────────────────────────────
 
 def build_server(data_path: Path) -> FastMCP:
@@ -46,6 +70,11 @@ def build_server(data_path: Path) -> FastMCP:
     def get_index() -> str:
         """List all Anthropic courses with slug, title, URL, and lesson count."""
         return _get_index(courses)
+
+    @mcp.resource("courses://{slug}", mime_type="application/json")
+    def get_course(slug: str) -> str:
+        """Get course overview: title, lesson count, and list of lessons with indices."""
+        return _get_course(courses, slug)
 
     return mcp
 
