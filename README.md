@@ -60,8 +60,23 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "anthropic-courses": {
       "command": "uv",
-      "args": ["run", "server.py"],
+      "args": ["run", "server.py", "--stdio"],
       "cwd": "/path/to/anthropic-courses-mcp"
+    }
+  }
+}
+```
+
+## Claude Code config
+
+For HTTP transport, start the server first (`uv run server.py`) then add to your Claude Code MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "anthropic-courses": {
+      "type": "http",
+      "url": "http://localhost:8000/mcp"
     }
   }
 }

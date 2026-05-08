@@ -168,10 +168,14 @@ def build_server(data_path: Path) -> FastMCP:
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    import sys
     data_path_str = os.environ.get("DATA_PATH")
     if not data_path_str:
         raise RuntimeError("DATA_PATH environment variable is not set. Copy .env.example to .env and set DATA_PATH.")
     data_path = Path(data_path_str)
-    port = int(os.environ.get("PORT", "8000"))
     mcp = build_server(data_path)
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=port)
+    if "--stdio" in sys.argv:
+        mcp.run(transport="stdio")
+    else:
+        port = int(os.environ.get("PORT", "8000"))
+        mcp.run(transport="streamable-http", host="0.0.0.0", port=port)
