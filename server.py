@@ -30,6 +30,29 @@ def _get_index(courses: dict[str, dict]) -> str:
     return json.dumps(result)
 
 
+def _search_lessons(courses: dict[str, dict], query: str) -> list[dict]:
+    """Case-insensitive substring search across all lesson titles.
+
+    Returns list of {slug, courseTitle, lessonIndex, lessonTitle}.
+    lessonIndex is zero-based and can be used directly in courses://{slug}/lessons/{n}.
+    Returns empty list when nothing matches.
+    """
+    query_lower = query.lower()
+    results = []
+    for slug, data in sorted(courses.items()):
+        for i, lesson in enumerate(data["lessons"]):
+            if query_lower in lesson["title"].lower():
+                results.append(
+                    {
+                        "slug": slug,
+                        "courseTitle": data["courseTitle"],
+                        "lessonIndex": i,
+                        "lessonTitle": lesson["title"],
+                    }
+                )
+    return results
+
+
 def _get_extras_index(extras: dict[str, dict]) -> str:
     """Return JSON list of extras with slug and filename."""
     result = [
@@ -124,6 +147,20 @@ def build_server(data_path: Path) -> FastMCP:
     def get_extra(slug: str) -> str:
         """Get a standalone reference document by slug."""
         return _get_extra(extras, slug)
+
+    @mcp.tool()
+    def search_lessons(
+        query: Annotated[str, Field(
+            description="Search term to match against lesson titles (case-insensitive substring match)"
+        )],
+    ) -> list[dict]:
+        """Search lesson titles across all courses.
+
+        Returns matching lessons with their course slug and lesson index.
+        Use the returned slug + lessonIndex to fetch content via courses://{slug}/lessons/{n}.
+        Returns an empty list when nothing matches.
+        """
+        return _search_lessons(courses, query)
 
     return mcp
 

@@ -153,3 +153,63 @@ def test_get_extra_returns_error_for_unknown_slug(data_dir):
     extras = load_extras(data_dir, courses)
     result = _get_extra(extras, "nonexistent")
     assert "not found" in result.lower()
+
+
+# ── search_lessons tool ───────────────────────────────────────────────────────
+
+def test_search_lessons_matches_partial_title(data_dir):
+    from loader import load_courses
+    from server import _search_lessons
+    courses = load_courses(data_dir)
+    results = _search_lessons(courses, "intro")
+    titles = [r["lessonTitle"] for r in results]
+    assert "Intro to Things" in titles
+
+
+def test_search_lessons_is_case_insensitive(data_dir):
+    from loader import load_courses
+    from server import _search_lessons
+    courses = load_courses(data_dir)
+    results_lower = _search_lessons(courses, "intro")
+    results_upper = _search_lessons(courses, "INTRO")
+    assert len(results_lower) == len(results_upper)
+
+
+def test_search_lessons_result_shape(data_dir):
+    from loader import load_courses
+    from server import _search_lessons
+    courses = load_courses(data_dir)
+    results = _search_lessons(courses, "intro")
+    assert len(results) > 0
+    result = results[0]
+    assert "slug" in result
+    assert "courseTitle" in result
+    assert "lessonIndex" in result
+    assert "lessonTitle" in result
+
+
+def test_search_lessons_lesson_index_is_zero_based(data_dir):
+    from loader import load_courses
+    from server import _search_lessons
+    courses = load_courses(data_dir)
+    results = _search_lessons(courses, "Intro to Things")
+    match = next(r for r in results if r["slug"] == "course-one")
+    assert match["lessonIndex"] == 0
+
+
+def test_search_lessons_returns_empty_list_on_no_match(data_dir):
+    from loader import load_courses
+    from server import _search_lessons
+    courses = load_courses(data_dir)
+    results = _search_lessons(courses, "zzz-no-match-zzz")
+    assert results == []
+
+
+def test_search_lessons_matches_across_multiple_courses(data_dir):
+    from loader import load_courses
+    from server import _search_lessons
+    courses = load_courses(data_dir)
+    adv = _search_lessons(courses, "advanced")
+    bas = _search_lessons(courses, "basics")
+    assert any(r["slug"] == "course-one" for r in adv)
+    assert any(r["slug"] == "course-two" for r in bas)
