@@ -21,7 +21,7 @@ Runs as `streamable-http` on `0.0.0.0:{PORT}`.
 
 ## Run
 ```
-cp .env.example .env  # edit DATA_PATH and PORT
+cp .env.example .env  # DATA_PATH defaults to ./data (included in repo)
 uv run server.py
 ```
 

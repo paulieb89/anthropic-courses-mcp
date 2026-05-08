@@ -1,0 +1,82 @@
+{
+  "courseTitle": "Model Context Protocol: Advanced Topics",
+  "courseUrl": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics",
+  "lessonCount": 15,
+  "lessons": [
+    {
+      "title": "Let's get started!",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296349",
+      "markdown": "## Let's get started!\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296349\n\nThis course covers the technical implementation of MCP servers and clients, from basic message passing to production deployment strategies. You'll learn how MCP enables language models like Claude to interact with external tools and data sources through standardized protocols, transports, and message formats.\n"
+    },
+    {
+      "title": "Sampling",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296288",
+      "markdown": "## Sampling\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296288\n\nSampling = technique allowing MCP servers to request language model text generation from clients instead of directly accessing LLMs themselves.\n\nPurpose = shifts LLM access responsibility from server to client, avoiding need for servers to handle API keys, authentication, or token costs.\n\nArchitecture = Server creates message request → Client receives via sampling callback → Client calls LLM → Client returns generated text to server.\n\nBenefits = eliminates server complexity for LLM integration, removes API key requirements from servers, prevents unauthorized token usage on public servers.\n\nImplementation = Server uses create_message() function with message list, Client implements sampling callback to handle LLM requests and return create_message_result.\n\nPrimary use case = publicly accessible MCP servers that need LLM capabilities without direct LLM access or associated costs/security concerns.\n"
+    },
+    {
+      "title": "Sampling walkthrough",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/295172",
+      "markdown": "## Sampling walkthrough\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/295172\n\n← Previous Next →\n"
+    },
+    {
+      "title": "Log and progress notifications",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296284",
+      "markdown": "## Log and progress notifications\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296284\n\nLog and Progress Notifications = MCP server feature that provides real-time feedback during tool execution to improve user experience.\n\nImplementation on server side:\n- Tool functions automatically receive context argument as last parameter\n- Context object provides methods: info() for logging, report_progress() for progress updates\n- Calling these methods automatically sends messages back to client\n\nImplementation on client side:\n- Create callback function for logging statements\n- Create separate callback for progress updates\n- Pass logging callback to client session\n- Pass progress callback to call_tool function\n- Callbacks handle how to display information to user (terminal output, web UI, etc.)\n\nKey benefits:\n- Prevents user confusion about stalled/failed tool calls\n- Provides visibility into long-running operations\n- Real-time feedback during tool execution\n\nOptional feature = can be omitted if not needed, purely for UX enhancement.\n"
+    },
+    {
+      "title": "Notifications walkthrough",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/291036",
+      "markdown": "## Notifications walkthrough\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/291036\n\n← Previous Next →\n"
+    },
+    {
+      "title": "Roots",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296289",
+      "markdown": "## Roots\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296289\n\nMCP Roots = codified way for users to grant server access to specific files/folders\n\nProblem without roots: User says \"convert bikin.mp4\" but Claude can't locate file in complex filesystem without full path. Requiring full paths inconvenient for users.\n\nSolution with roots: Add 3 tools to MCP server:\n- ConvertVideo (original tool)\n- ReadDirectory (lists files/folders in directory)  \n- ListRoots (returns available roots)\n\nRoot = file/folder user grants permission to access beforehand (via command line args when starting server)\n\nImplementation requirement: Tools must check that accessed files/folders are contained within granted roots using function like is_path_allowed()\n\nTwo main benefits:\n1. Permission control - limits server access to authorized areas only\n2. Autonomous discovery - Claude can search through available roots to find files without user providing full paths\n\nKey limitation: MCP SDK doesn't automatically enforce root restrictions. Server developer must implement access checks manually.\n\nListRoots tool optional - can alternatively include root list in prompt directly. Tool pattern allows Claude to dynamically check available roots when needed.\n"
+    },
+    {
+      "title": "Roots walkthrough",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/295839",
+      "markdown": "## Roots walkthrough\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/295839\n\n← Previous Next →\n"
+    },
+    {
+      "title": "Survey",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/297276",
+      "markdown": "## Survey\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/297276\n\nInteractive survey content was not embedded in the saved course HTML.\n"
+    },
+    {
+      "title": "JSON message types",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296290",
+      "markdown": "## JSON message types\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296290\n\nJSON Message Types in MCP:\n\nMCP communication = JSON messages between clients and servers. Each message type has distinct purpose.\n\nMessage categories:\n- Request/Result pairs = Always come together (call_tool_request + call_tool_result, initialize_request + initialize_result)\n- Notifications = Events that don't need responses (progress_notification, logging_message_notification, tool_change_notification)\n\nMessage direction classification:\n- Client messages = Sent by MCP client to server\n- Server messages = Sent by MCP server to client\n\nKey insight: Servers can send messages TO clients (server requests, server notifications). This directional capability becomes critical limitation in streamable HTTP transport.\n\nSchema definition = TypeScript file in MCP spec repository (schema.ts). Not executable code, just type descriptions for convenience.\n\nMessage structure = JSON-RPC format with method, params, ID fields.\n"
+    },
+    {
+      "title": "The STDIO transport",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296291",
+      "markdown": "## The STDIO transport\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296291\n\nMCP Transport = mechanism for moving JSON messages between client and server\n\nStdio Transport = transport where client launches server as separate process, communicates via standard input/output streams\n\nCommunication mechanism: Client writes to server's stdin, reads from server's stdout. Server writes to stdout, reads from stdin.\n\nAdvantages: Bidirectional communication - either client or server can initiate requests at any time\n\nLimitations: Only works when client and server run on same physical machine\n\nMessage exchange patterns:\n- Client-to-server request: Write to stdin, read response from stdout\n- Server-to-client request: Server writes to stdout, client responds via stdin\n\nRequired initialization sequence:\n1. Initialize request (client to server)\n2. Initialize result (server to client) \n3. Initialize notification (client to server, no response required)\n\nMessage types:\n- Requests = expect responses\n- Notifications = no response required\n- Results = responses to requests\n\nKey characteristic: Full bidirectional communication support - both parties can initiate requests\n\nContrast with HTTP transport: HTTP transport has limitations on server-initiated requests that stdio transport doesn't have\n"
+    },
+    {
+      "title": "The StreamableHTTP transport",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296287",
+      "markdown": "## The StreamableHTTP transport\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296287\n\nStreamableHTTP Transport = MCP transport enabling client-server communication over HTTP connections, allows remote server hosting unlike standard I/O transport which requires same-machine operation.\n\nKey advantage = Remote hosting capability - servers can be publicly accessible at URLs like mcpserver.com, expanding MCP server possibilities.\n\nCritical limitation = Restricted server-to-client messaging functionality due to HTTP's unidirectional nature - clients easily request from servers, but servers cannot easily initiate requests to clients.\n\nTwo key settings impact functionality:\n- stateless HTTP (default: false)\n- JSON response (default: false)\n\nSetting these to true = Reduced functionality, breaks progress bars, logging notifications, progress notifications, and sampling requests.\n\nHTTP communication constraint = Server doesn't know client address and client may not be publicly accessible, making server-initiated requests challenging.\n\nAffected message types when using HTTP = Sampling requests, listing routes, progress notifications, logging notifications - all require server-to-client communication.\n\nCommon deployment issue = Application works fine locally with standard I/O transport but fails when deployed with HTTP transport due to these messaging restrictions.\n\nSolution exists = StreamableHTTP transport has workarounds for server-to-client communication challenges, but with caveats.\n"
+    },
+    {
+      "title": "StreamableHTTP in depth",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296286",
+      "markdown": "## StreamableHTTP in depth\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296286\n\nStreamableHTTP Transport = HTTP-based MCP transport using server-sent events (SSE) to enable server-to-client communication\n\nCore Problem: MCP requires server-to-client requests (sampling, notifications, logging) but HTTP naturally supports only client-to-server requests\n\nWorkaround Solution: Uses SSE connections to allow server streaming messages to client\n\nSession ID = Random identifier assigned during initialization, included in all subsequent requests as HTTP header\n\nInitialization Flow:\n1. Client sends initialize request\n2. Server responds with result + MCP session ID header\n3. Client sends initialized notification with session ID\n4. Client optionally makes GET request with session ID to establish SSE connection\n\nTwo SSE Connections:\n1. Long-lived SSE connection = For server-initiated requests (sampling, notifications)\n2. Short-lived SSE connection = For specific tool call responses, automatically closed after result\n\nMessage Routing:\n- Progress notifications → Long-lived SSE connection\n- Logging messages + tool results → Short-lived SSE connection tied to specific request\n\nKey Limitation: Setting certain flags to true breaks the workaround, making StreamableHTTP complex to understand and use properly\n\nCritical Point: SSE responses enable bidirectional communication over HTTP by keeping connections open and streaming individual messages from server to client\n"
+    },
+    {
+      "title": "State and the StreamableHTTP transport",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296285",
+      "markdown": "## State and the StreamableHTTP transport\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296285\n\n**Stateless HTTP Flag**\n\nStateless HTTP = flag set to true when MCP server needs horizontal scaling across multiple instances with load balancer\n\n**Why needed**: Single server instance can't handle high traffic. Horizontal scaling uses multiple server copies + load balancer routing requests randomly.\n\n**Problem without stateless**: Client needs 2 connections (GET SSE for server-to-client requests, POST for client-to-server). Load balancer may route these to different server instances. If tool on Server A needs sampling request, it must go through GET SSE connection on Server B - requires complex coordination.\n\n**Effect of stateless=true**:\n- No session IDs assigned to clients\n- Server cannot track individual clients\n- GET SSE response pathway disabled (server cannot send requests to client)\n- Eliminates sampling, progress logging, resource subscriptions\n- No client initialization required (skips initialize request + notification)\n- Reduces server traffic\n\n**JSON Response Flag**\n\nJSON response = flag disabling streaming responses on POST requests\n\n**Effect of JSON response=true**:\n- POST responses return final result as plain JSON only\n- No intermediate streaming messages\n- No progress/log statements during execution\n- Client waits for complete tool execution before receiving response\n\n**Key Takeaway**: Both flags significantly change server behavior. Use same transport in development as planned for production to avoid deployment issues.\n"
+    },
+    {
+      "title": "Assessment on MCP concepts",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296301",
+      "markdown": "## Assessment on MCP concepts\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296301\n\nInteractive assessment content was not embedded in the saved course HTML.\n"
+    },
+    {
+      "title": "Wrapping up",
+      "href": "https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296350",
+      "markdown": "## Wrapping up\n\nSource: https://anthropic.skilljar.com/model-context-protocol-advanced-topics/296350\n\nClosing lesson text was not embedded in the saved course HTML.\n"
+    }
+  ]
+}
