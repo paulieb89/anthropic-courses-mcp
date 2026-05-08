@@ -30,6 +30,23 @@ def _get_index(courses: dict[str, dict]) -> str:
     return json.dumps(result)
 
 
+def _get_lesson(courses: dict[str, dict], slug: str, n: str) -> str:
+    """Return lesson markdown by course slug and zero-based index, or a descriptive error string."""
+    if slug not in courses:
+        return f"Course '{slug}' not found."
+    try:
+        idx = int(n)
+    except ValueError:
+        return f"'{n}' is not a valid lesson index. Expected a non-negative integer."
+    lessons = courses[slug]["lessons"]
+    if idx < 0 or idx >= len(lessons):
+        return (
+            f"Lesson index {idx} is out of range for course '{slug}'. "
+            f"Valid indices: 0–{len(lessons) - 1}."
+        )
+    return lessons[idx]["markdown"]
+
+
 def _get_course(courses: dict[str, dict], slug: str) -> str:
     """Return JSON course overview or descriptive error string."""
     if slug not in courses:
@@ -75,6 +92,11 @@ def build_server(data_path: Path) -> FastMCP:
     def get_course(slug: str) -> str:
         """Get course overview: title, lesson count, and list of lessons with indices."""
         return _get_course(courses, slug)
+
+    @mcp.resource("courses://{slug}/lessons/{n}", mime_type="text/markdown")
+    def get_lesson(slug: str, n: str) -> str:
+        """Get a single lesson's markdown content by course slug and zero-based index."""
+        return _get_lesson(courses, slug, n)
 
     return mcp
 

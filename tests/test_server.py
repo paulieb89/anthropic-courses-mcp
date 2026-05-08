@@ -71,3 +71,45 @@ def test_get_course_returns_error_string_for_unknown_slug(data_dir):
     result = _get_course(courses, "does-not-exist")
     assert "not found" in result.lower()
     assert "does-not-exist" in result
+
+
+# ── courses://{slug}/lessons/{n} ──────────────────────────────────────────────
+
+def test_get_lesson_returns_markdown_content(data_dir):
+    from loader import load_courses
+    from server import _get_lesson
+    courses = load_courses(data_dir)
+    result = _get_lesson(courses, "course-one", "0")
+    assert result == "## Intro to Things\n\nContent one."
+
+
+def test_get_lesson_second_lesson(data_dir):
+    from loader import load_courses
+    from server import _get_lesson
+    courses = load_courses(data_dir)
+    result = _get_lesson(courses, "course-one", "1")
+    assert result == "## Advanced Topics\n\nContent two."
+
+
+def test_get_lesson_returns_error_for_unknown_course(data_dir):
+    from loader import load_courses
+    from server import _get_lesson
+    courses = load_courses(data_dir)
+    result = _get_lesson(courses, "does-not-exist", "0")
+    assert "not found" in result.lower()
+
+
+def test_get_lesson_returns_error_for_out_of_range_index(data_dir):
+    from loader import load_courses
+    from server import _get_lesson
+    courses = load_courses(data_dir)
+    result = _get_lesson(courses, "course-one", "99")
+    assert "out of range" in result.lower()
+
+
+def test_get_lesson_returns_error_for_non_integer_index(data_dir):
+    from loader import load_courses
+    from server import _get_lesson
+    courses = load_courses(data_dir)
+    result = _get_lesson(courses, "course-one", "abc")
+    assert "not a valid lesson index" in result.lower()
