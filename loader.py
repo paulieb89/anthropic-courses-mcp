@@ -26,7 +26,7 @@ def load_courses(data_path: Path) -> dict[str, dict]:
         if path.name.startswith("_"):
             continue
         try:
-            data = json.loads(path.read_text())
+            data = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             logger.warning("Skipping %s — invalid JSON: %s", path.name, exc)
             continue
