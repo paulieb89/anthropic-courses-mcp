@@ -30,6 +30,23 @@ def _get_index(courses: dict[str, dict]) -> str:
     return json.dumps(result)
 
 
+def _get_extras_index(extras: dict[str, dict]) -> str:
+    """Return JSON list of extras with slug and filename."""
+    result = [
+        {"slug": slug, "filename": data["filename"]}
+        for slug, data in sorted(extras.items())
+    ]
+    return json.dumps(result)
+
+
+def _get_extra(extras: dict[str, dict], slug: str) -> str:
+    """Return extra document markdown or descriptive error string."""
+    if slug not in extras:
+        available = ", ".join(sorted(extras.keys()))
+        return f"Extra '{slug}' not found. Available extras: {available}"
+    return extras[slug]["content"]
+
+
 def _get_lesson(courses: dict[str, dict], slug: str, n: str) -> str:
     """Return lesson markdown by course slug and zero-based index, or a descriptive error string."""
     if slug not in courses:
@@ -97,6 +114,16 @@ def build_server(data_path: Path) -> FastMCP:
     def get_lesson(slug: str, n: str) -> str:
         """Get a single lesson's markdown content by course slug and zero-based index."""
         return _get_lesson(courses, slug, n)
+
+    @mcp.resource("courses://extras", mime_type="application/json")
+    def get_extras_index() -> str:
+        """List all standalone reference documents (MD files with no course JSON)."""
+        return _get_extras_index(extras)
+
+    @mcp.resource("courses://extras/{slug}", mime_type="text/markdown")
+    def get_extra(slug: str) -> str:
+        """Get a standalone reference document by slug."""
+        return _get_extra(extras, slug)
 
     return mcp
 

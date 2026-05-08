@@ -113,3 +113,43 @@ def test_get_lesson_returns_error_for_non_integer_index(data_dir):
     courses = load_courses(data_dir)
     result = _get_lesson(courses, "course-one", "abc")
     assert "not a valid lesson index" in result.lower()
+
+
+# ── courses://extras ──────────────────────────────────────────────────────────
+
+def test_get_extras_index_returns_list(data_dir):
+    from loader import load_courses, load_extras
+    from server import _get_extras_index
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    result = json.loads(_get_extras_index(extras))
+    slugs = [e["slug"] for e in result]
+    assert "extra-guide" in slugs
+
+
+def test_get_extras_index_entry_shape(data_dir):
+    from loader import load_courses, load_extras
+    from server import _get_extras_index
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    result = json.loads(_get_extras_index(extras))
+    entry = next(e for e in result if e["slug"] == "extra-guide")
+    assert entry["filename"] == "extra_guide.md"
+
+
+def test_get_extra_returns_markdown_for_known_slug(data_dir):
+    from loader import load_courses, load_extras
+    from server import _get_extra
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    result = _get_extra(extras, "extra-guide")
+    assert "# Extra Guide" in result
+
+
+def test_get_extra_returns_error_for_unknown_slug(data_dir):
+    from loader import load_courses, load_extras
+    from server import _get_extra
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    result = _get_extra(extras, "nonexistent")
+    assert "not found" in result.lower()
