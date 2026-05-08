@@ -53,7 +53,7 @@ The server runs on `http://0.0.0.0:8000` by default. Set `PORT` in `.env` to cha
 
 ## Claude Desktop config
 
-Add to your `claude_desktop_config.json`:
+Add to your `claude_desktop_config.json` (replace `/path/to/anthropic-courses-mcp` with the absolute path to your clone):
 
 ```json
 {
@@ -61,11 +61,16 @@ Add to your `claude_desktop_config.json`:
     "anthropic-courses": {
       "command": "uv",
       "args": ["run", "server.py", "--stdio"],
-      "cwd": "/path/to/anthropic-courses-mcp"
+      "cwd": "/path/to/anthropic-courses-mcp",
+      "env": {
+        "DATA_PATH": "/path/to/anthropic-courses-mcp/data"
+      }
     }
   }
 }
 ```
+
+Claude Desktop runs servers in an isolated environment — `DATA_PATH` must be set explicitly as an absolute path.
 
 ## Claude Code config
 
