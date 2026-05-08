@@ -1,0 +1,14 @@
+[project]
+name = "anthropic-courses-mcp"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=2.0",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
