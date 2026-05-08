@@ -66,9 +66,14 @@ def load_extras(data_path: Path, courses: dict[str, dict]) -> dict[str, dict]:
             continue
 
         slug = path.stem.lower().replace("_", "-")
+        try:
+            content = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError as exc:
+            logger.warning("Skipping %s — encoding error: %s", path.name, exc)
+            continue
         extras[slug] = {
             "filename": path.name,
-            "content": path.read_text(),
+            "content": content,
         }
 
     return extras

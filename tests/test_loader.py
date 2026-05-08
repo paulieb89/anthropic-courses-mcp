@@ -40,3 +40,39 @@ def test_load_courses_raises_on_zero_valid_courses(tmp_path):
     (tmp_path / "_only.json").write_text("[]")
     with pytest.raises(RuntimeError, match="No valid"):
         load_courses(tmp_path)
+
+
+# ── load_extras ───────────────────────────────────────────────────────────────
+
+def test_load_extras_includes_md_without_json_pair(data_dir):
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    assert "extra-guide" in extras
+
+
+def test_load_extras_excludes_index_md(data_dir):
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    assert "index" not in extras
+
+
+def test_load_extras_excludes_md_with_matching_json(data_dir):
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    assert "course-one" not in extras
+
+
+def test_load_extras_slug_derivation_underscores_to_hyphens(data_dir):
+    # extra_guide.md → extra-guide
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    assert "extra-guide" in extras
+    assert "extra_guide" not in extras
+
+
+def test_load_extras_content_and_filename(data_dir):
+    courses = load_courses(data_dir)
+    extras = load_extras(data_dir, courses)
+    entry = extras["extra-guide"]
+    assert entry["filename"] == "extra_guide.md"
+    assert entry["content"] == "# Extra Guide\n\nSome extra content."
